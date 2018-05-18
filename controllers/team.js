@@ -1,4 +1,5 @@
 const {Team} = require("../models/Team");
+const {Player} = require("../models/Player");
 const {addPlayer} = require("./player");
 
 const addTeam = (name, companyName, players) => {
@@ -47,10 +48,15 @@ const getTeams = () => {
     return Team.find({});
 }
 
+const getTeamMembers = () => {
+    return Player.find({teamId: team});
+}
+
 module.exports = {
     addTeam,
     wonMatch,
     lostMatch,
     nrMatch,
-    getTeams
+    getTeams,
+    getTeamMembers
 }

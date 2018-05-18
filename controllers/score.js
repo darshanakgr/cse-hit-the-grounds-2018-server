@@ -1,5 +1,7 @@
 const {TeamScore} = require("../models/TeamScore");
+const {PlayerScore} = require("../models/PlayerScore");
 const {Match} = require("../models/Match");
+const {Player} = require("../models/Player");
 
 const addPlayerScore = (matchId, teamId, playerId) => {
     return new PlayerScore({matchId, teamId, playerId}).save();
@@ -27,10 +29,30 @@ const addMatch = (name, umpires, teams) => {
                 new TeamScore({
                     matchId: res.id,
                     teamId: team
-                }).save().then((data) => {
+                }).save().then((snapshot) => {
                     if (++count == teams.length) {
                         return resolve(res);
                     }
+                }).catch( e => reject(e));
+            });
+        }).catch( e => reject(e));
+    });
+}
+
+const initializeMatch = (name, umpires, teams) => {
+    return new Promise((resolve, reject) => {
+        addMatch(name, umpires, teams).then((match) => {
+            let count = 0;
+            teams.forEach((team) => {
+                Player.find({teamId: team}).then((players) => {
+                    count += players.length;
+                    players.forEach((player) => {
+                        addPlayerScore(match.id, team, player.id).then((score) => {
+                            if(--count == 0){
+                                resolve(match);
+                            }
+                        }).catch( e => reject(e));
+                    });
                 }).catch( e => reject(e));
             });
         }).catch( e => reject(e));
@@ -62,6 +84,6 @@ const getLiveMatches = () => {
 module.exports = {
     addPlayerScore,
     updateScore,
-    addMatch,
+    initializeMatch,
     getLiveMatches
 }

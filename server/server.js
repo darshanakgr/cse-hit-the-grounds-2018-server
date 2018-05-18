@@ -3,7 +3,7 @@ const httpServer = require('http')
 const socketIO = require('socket.io');
 const bodyParser = require('body-parser');
 const {mongoose} = require("../db/connection");
-const {addTeam, getTeams} = require("../controllers/team");
+const {addTeam, getTeams, getTeamMembers} = require("../controllers/team");
 const {addMatch, getLiveMatches} = require("../controllers/score");
 
 
@@ -31,14 +31,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on("addLiveMatch", (match, callback) => {
-        console.log(match);
-        addMatch(match.name, match.umpires, match.teams).then((res) => {
+        initializeMatch(match.name, match.umpires, match.teams).then((res) => {
             callback(undefined, res);
         }).catch((e) => callback(e));
     });
 
     socket.on("getLiveMatches", (callback) => {
         getLiveMatches().then((res) => {
+            callback(undefined, res);
+        }).catch((e) => callback(e));
+    });
+
+    socket.on("getMembers", (callback) => {
+        getTeamMembers().then((res) => {
             callback(undefined, res);
         }).catch((e) => callback(e));
     })
