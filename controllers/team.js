@@ -1,10 +1,22 @@
 const {Team} = require("../models/Team");
+const {addPlayer} = require("./player");
 
-const addTeam = (name, companyName) => {
-    return new Team({
-        name,
-        companyName
-    }).save();
+const addTeam = (name, companyName, players) => {
+    return new Promise((resolve, reject) => {
+        new Team({
+            name,
+            companyName
+        }).save().then((team) => {
+            let count = 0;
+            players.forEach((player) => {
+                addPlayer(team.id, player).then((snapshot) => {
+                    if (++count == players.length) {
+                        return resolve(team);
+                    }
+                }).catch( e => reject(e));
+            });
+        }).catch( e => reject(e));
+    });
 };
 
 const wonMatch = (teamId) => {
@@ -31,9 +43,14 @@ const nrMatch = (teamId) => {
     })
 }
 
+const getTeams = () => {
+    return Team.find({});
+}
+
 module.exports = {
     addTeam,
     wonMatch,
     lostMatch,
-    nrMatch
+    nrMatch,
+    getTeams
 }

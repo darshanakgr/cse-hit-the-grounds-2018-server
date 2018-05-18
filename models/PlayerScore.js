@@ -3,6 +3,7 @@ const {mongoose} = require("../db/connection");
 var PlayerScore = mongoose.model('PlayerScore', new mongoose.Schema({
     matchId: String,
     teamId: Number,
+    playerId: String,
     score: {
         type: Number,
         default: 0
