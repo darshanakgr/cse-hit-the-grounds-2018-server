@@ -24,6 +24,10 @@ var TeamScore = mongoose.model('TeamScore', new mongoose.Schema({
     no: {
         type: Number,
         default: 0
+    },
+    overs: {
+        type: String,
+        default: '0.0'
     }
 }));
 
