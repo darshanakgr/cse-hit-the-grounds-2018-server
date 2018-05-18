@@ -19,30 +19,43 @@ const updateScore = (matchId, teamId, playerId, score, overs, wickets)  => {
     });
 };
 
-const addMatch = (matchName, umpires, teams) => {
+const addMatch = (name, umpires, teams) => {
     return new Promise((resolve, reject) => {
-        new Match({matchName, umpires})
-            .save()
-            .then((res) => {
+        new Match({name, umpires}).save().then((res) => {
             let count = 0;
-                teams.forEach((team) => {
-                    new TeamScore({
-                        matchId: res.id,
-                        teamId: team,
-                        
-                    }).save((data) => {
-                        if (++count == teams.length) {
-                            return resolve(team);
-                        }
-                    }).catch( e => reject(e));
-                })
-            }).catch( e => reject(e));
+            teams.forEach((team) => {
+                new TeamScore({
+                    matchId: res.id,
+                    teamId: team
+                }).save().then((data) => {
+                    if (++count == teams.length) {
+                        return resolve(res);
+                    }
+                }).catch( e => reject(e));
+            });
+        }).catch( e => reject(e));
     });
 }
 
 const getLiveMatches = () => {
-    return Match.find({
-        status: true
+    return new Promise((resolve, reject) => {
+        Match.find({
+            status: true
+        }).then((matches) => {
+            let response = {};
+            matches.forEach((match) => {
+                let r = {
+                    name: match.name
+                };
+                TeamScore.find({matchId: match.id}).then((teams) => {
+                    r.teams = teams;
+                    response[match.id] = r;
+                    if(Object.keys(response).length == matches.length){
+                        return resolve(response);
+                    }
+                }).catch( e => reject(e));
+            });
+        }).catch( e => reject(e));
     });
 }
 
